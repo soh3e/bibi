@@ -8,13 +8,20 @@ from typing import Any
 from textual import events
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import DataTable, Footer, Header
+from textual.widgets import DataTable, Footer, Header, Static
 from textual.widgets.data_table import RowDoesNotExist
 
 from . import clipboard, library
+from .art import BUNNY_LOGO
 from .screens.add_arxiv import AddArxivScreen
 from .screens.edit_tags import EditTagsScreen
 from .screens.entry_detail import EntryDetailScreen
+
+_EMPTY_STATE_TEXT = (
+    f"{BUNNY_LOGO}\n\n"
+    "Your library is empty.\n"
+    "Press 'a' to add your first entry from arXiv."
+)
 
 # Layout knobs for the responsive Title/Authors/Tags/Year columns (see
 # `BibiApp._rebuild_rows`).
@@ -99,6 +106,13 @@ class BibiApp(App[None]):
     VimDataTable {
         height: 1fr;
     }
+
+    #empty-state {
+        height: 1fr;
+        content-align: center middle;
+        color: $text-muted;
+        text-align: center;
+    }
     """
 
     BINDINGS = [
@@ -116,6 +130,7 @@ class BibiApp(App[None]):
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield Static(_EMPTY_STATE_TEXT, id="empty-state")
         yield VimDataTable(cursor_type="row", zebra_stripes=True)
         yield Footer()
 
@@ -135,6 +150,12 @@ class BibiApp(App[None]):
     def _rebuild_rows(self, total_width: int) -> None:
         """Redraw the table's columns/rows to fit the given terminal width."""
         table = self.query_one(VimDataTable)
+        table.display = bool(self._entries)
+        self.query_one("#empty-state").display = not self._entries
+        if not self._entries:
+            table.clear(columns=True)
+            return
+
         title_width, authors_width, tags_width = self._column_widths(self._entries, total_width)
 
         # `clear()` drops the cursor back to the top row, so remember which
