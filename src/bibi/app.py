@@ -14,6 +14,7 @@ from textual.widgets.data_table import RowDoesNotExist
 from . import clipboard, library
 from .art import BUNNY_LOGO
 from .screens.add_arxiv import AddArxivScreen
+from .screens.confirm_delete import ConfirmDeleteScreen
 from .screens.edit_tags import EditTagsScreen
 from .screens.entry_detail import EntryDetailScreen
 
@@ -120,6 +121,7 @@ class BibiApp(App[None]):
         Binding("o", "open_file", "Open file"),
         Binding("c", "copy_link", "Copy link"),
         Binding("t", "edit_tags", "Edit tags"),
+        Binding("d", "delete_entry", "Delete entry"),
         Binding("q", "quit", "Quit"),
     ]
 
@@ -287,6 +289,19 @@ class BibiApp(App[None]):
                 self.refresh_table()
 
         self.push_screen(EditTagsScreen(entry), on_result)
+
+    def action_delete_entry(self) -> None:
+        entry = self._selected_entry()
+        if entry is None:
+            return
+
+        def on_result(confirmed: bool | None) -> None:
+            if confirmed:
+                library.delete_entry(entry)
+                self.refresh_table()
+                self.notify(f"Deleted: {entry.get('title', '(untitled)')}")
+
+        self.push_screen(ConfirmDeleteScreen(entry), on_result)
 
 
 def main() -> None:

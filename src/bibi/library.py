@@ -9,6 +9,7 @@ nothing and a random one sidesteps collisions/slugification entirely.
 from __future__ import annotations
 
 import os
+import shutil
 import uuid
 import webbrowser
 from pathlib import Path
@@ -63,6 +64,15 @@ def save_entry(entry: dict[str, Any]) -> None:
 
     data = {key: value for key, value in entry.items() if key != "_folder"}
     _write_info(Path(folder), data)
+
+
+def delete_entry(entry: dict[str, Any]) -> None:
+    """Permanently delete an entry's folder and everything in it."""
+    folder = entry.get("_folder")
+    if not folder:
+        raise ValueError("Entry has no folder to delete.")
+
+    shutil.rmtree(folder)
 
 
 def parse_tags(raw: str) -> list[str]:

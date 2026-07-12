@@ -14,6 +14,7 @@ from textual.widgets import Static
 
 from .. import clipboard, library
 from ..vim import VimScrollBindings
+from .confirm_delete import ConfirmDeleteScreen
 from .edit_tags import EditTagsScreen
 
 
@@ -63,6 +64,7 @@ class EntryDetailScreen(VimScrollBindings, ModalScreen[None]):
         Binding("o", "open_file", "Open", show=True),
         Binding("c", "copy_link", "Copy link", show=True),
         Binding("t", "edit_tags", "Edit tags", show=True),
+        Binding("d", "delete_entry", "Delete entry", show=True),
     ]
 
     def __init__(self, entry: dict[str, Any]) -> None:
@@ -106,3 +108,12 @@ class EntryDetailScreen(VimScrollBindings, ModalScreen[None]):
                 self.query_one("#detail_text", Static).update(_format_entry(self._entry))
 
         self.app.push_screen(EditTagsScreen(self._entry), on_result)
+
+    def action_delete_entry(self) -> None:
+        def on_result(confirmed: bool | None) -> None:
+            if confirmed:
+                library.delete_entry(self._entry)
+                self.notify(f"Deleted: {self._entry.get('title', '(untitled)')}")
+                self.dismiss(None)
+
+        self.app.push_screen(ConfirmDeleteScreen(self._entry), on_result)
