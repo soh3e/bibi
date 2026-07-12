@@ -15,7 +15,7 @@ from textual.widgets import Button, Input, LoadingIndicator, Static
 
 from .. import arxiv as arxiv_mod
 from .. import library
-from ..vim import VimScrollBindings
+from ..vim import VimButtonBindings, VimScrollBindings
 
 
 def _format_preview(data: dict[str, Any]) -> str:
@@ -32,7 +32,7 @@ def _format_preview(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-class AddArxivScreen(VimScrollBindings, ModalScreen[dict | None]):
+class AddArxivScreen(VimScrollBindings, VimButtonBindings, ModalScreen[dict | None]):
     """Fetch and confirm an entry from arXiv, dismissing with the saved
     entry dict (or ``None`` if the user cancelled)."""
 
@@ -74,6 +74,7 @@ class AddArxivScreen(VimScrollBindings, ModalScreen[dict | None]):
 
     BINDINGS = [
         *VimScrollBindings.BINDINGS,
+        *VimButtonBindings.BINDINGS,
         Binding("escape", "cancel", "Cancel", show=True),
     ]
 

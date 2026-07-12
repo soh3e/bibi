@@ -59,3 +59,6 @@ but you can find the exact keybinds and corresponding behavior here:
 | `d`                  | Delete the entry (asks for confirmation)   |
 | `escape` / `q` / `h` | Close the current screen                   |
 | `q`                  | Quit (from the main entry list)            |
+
+In any dialog with buttons (e.g. saving a new arXiv entry), `h`/`l` (and
+the arrow keys) move focus between them, same as Tab/Shift+Tab.

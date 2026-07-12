@@ -1,5 +1,6 @@
-"""Shared vim-style scroll keybinds (j/k/gg/G) for screens with a scrollable
-preview pane."""
+"""Shared vim-style keybinds: j/k/gg/G scrolling for screens with a
+scrollable preview pane, and h/l focus movement between buttons in a
+dialog/modal."""
 
 from __future__ import annotations
 
@@ -50,3 +51,18 @@ class VimScrollBindings:
             self.vim_scroll_target().scroll_home()
         else:
             self._vim_last_g_time = now
+
+
+class VimButtonBindings:
+    """Mixin for a dialog/modal with a row of buttons.
+
+    Adds ``h``/``l`` (and the arrow keys) as aliases for the
+    Tab/Shift+Tab focus movement Textual's `Screen` already binds, so you
+    can move between e.g. Cancel/Confirm buttons without leaving the home
+    row.
+    """
+
+    BINDINGS = [
+        Binding("h,left", "app.focus_previous", "Focus previous", show=False),
+        Binding("l,right", "app.focus_next", "Focus next", show=False),
+    ]
