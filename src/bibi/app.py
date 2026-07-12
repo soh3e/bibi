@@ -24,15 +24,16 @@ _EMPTY_STATE_TEXT = (
     "Press 'a' to add your first entry from arXiv."
 )
 
-# Layout knobs for the responsive Title/Authors/Tags/Year columns (see
-# `BibiApp._rebuild_rows`).
+# Layout knobs for the responsive Title/Authors/Tags columns (see
+# `BibiApp._rebuild_rows`). Read and Year are small, fixed-width columns.
+_READ_COLUMN_WIDTH = 4
 _YEAR_COLUMN_WIDTH = 4
 _MIN_TITLE_WIDTH = 12
 _MIN_AUTHORS_WIDTH = 10
 _MIN_TAGS_WIDTH = 6
-# 1 padding cell on each side of each of the 4 columns, plus slack for the
+# 1 padding cell on each side of each of the 5 columns, plus slack for the
 # scrollbar so a snug fit doesn't trigger horizontal scrolling.
-_CHROME_WIDTH = 2 * 4 + 4
+_CHROME_WIDTH = 2 * 5 + 4
 
 
 def _truncate(text: str, width: int) -> str:
@@ -51,6 +52,13 @@ def _full_authors(authors: list[str]) -> str:
 
 def _full_tags(tags: list[str]) -> str:
     return ", ".join(tags)
+
+
+def _read_marker(entry: dict[str, Any]) -> str:
+    # NOTE: square brackets are Rich/Textual markup syntax, so "[x]" would
+    # render as empty (an unclosed style tag named "x") -- escaping the
+    # opening bracket keeps it literal.
+    return r"\[x]" if entry.get("read") else r"\[ ]"
 
 
 def _format_authors(authors: list[str], width: int) -> str:
@@ -87,7 +95,12 @@ def _allocate_widths(remaining: int, wants: list[tuple[int, int]]) -> list[int]:
 
 
 class VimDataTable(DataTable):
-    """A DataTable with vim-style navigation bound on top of the defaults."""
+    """A DataTable with vim-style navigation bound on top of the defaults.
+
+    ``enter`` is repurposed from the default ``select_cursor`` (viewing an
+    entry's details, now on ``l`` only) to toggling the Read column instead
+    -- overriding it here replaces DataTable's own binding for that key.
+    """
 
     BINDINGS = [
         Binding("j", "cursor_down", "Down", show=False),
@@ -95,6 +108,7 @@ class VimDataTable(DataTable):
         Binding("g", "scroll_top", "Top", show=False),
         Binding("G", "scroll_bottom", "Bottom", show=False),
         Binding("l", "select_cursor", "View", show=False),
+        Binding("enter", "app.toggle_read", "Toggle read", show=True),
     ]
 
 
@@ -170,16 +184,18 @@ class BibiApp(App[None]):
             selected_folder = row_key.value
 
         table.clear(columns=True)
+        table.add_column("Read", width=_READ_COLUMN_WIDTH)
         table.add_column("Title", width=title_width)
         table.add_column("Authors", width=authors_width)
         table.add_column("Tags", width=tags_width)
         table.add_column("Year", width=_YEAR_COLUMN_WIDTH)
 
         for entry in self._entries:
+            read = _read_marker(entry)
             title = _truncate(entry.get("title", "(untitled)"), title_width)
             authors = _format_authors(entry.get("authors", []), authors_width)
             tags = _truncate(_full_tags(entry.get("tags", [])), tags_width)
-            table.add_row(title, authors, tags, str(entry.get("year", "?")),
+            table.add_row(read, title, authors, tags, str(entry.get("year", "?")),
                           key=entry["_folder"])
 
         if selected_folder is not None:
@@ -198,7 +214,7 @@ class BibiApp(App[None]):
         width first (it's cheap to satisfy), leaving whatever's left to
         the columns that genuinely need more room than is available.
         """
-        remaining = total_width - _CHROME_WIDTH - _YEAR_COLUMN_WIDTH
+        remaining = total_width - _CHROME_WIDTH - _READ_COLUMN_WIDTH - _YEAR_COLUMN_WIDTH
         remaining = max(remaining, _MIN_TITLE_WIDTH + _MIN_AUTHORS_WIDTH + _MIN_TAGS_WIDTH)
 
         title_want = max(
@@ -302,6 +318,15 @@ class BibiApp(App[None]):
                 self.notify(f"Deleted: {entry.get('title', '(untitled)')}")
 
         self.push_screen(ConfirmDeleteScreen(entry), on_result)
+
+    def action_toggle_read(self) -> None:
+        entry = self._selected_entry()
+        if entry is None:
+            return
+
+        entry["read"] = not entry.get("read", False)
+        library.save_entry(entry)
+        self.refresh_table()
 
 
 def main() -> None:

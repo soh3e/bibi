@@ -35,6 +35,7 @@ def _format_entry(data: dict[str, Any]) -> str:
     if data.get("files"):
         lines.append(f"files: {', '.join(data['files'])}")
     lines.append(f"tags: {', '.join(data['tags'])}" if data.get("tags") else "tags: (none)")
+    lines.append(f"read: {'yes' if data.get('read') else 'no'}")
     lines += ["", data.get("abstract", "")]
     return "\n".join(lines)
 

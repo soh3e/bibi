@@ -52,7 +52,8 @@ but you can find the exact keybinds and corresponding behavior here:
 | `j` / `k`            | Move down / up                             |
 | `g` / `G`            | Scroll to top / bottom (entry list)        |
 | `gg` / `G`           | Scroll to top / bottom (previews/detail)   |
-| `enter` / `l`        | View entry details                         |
+| `enter`              | Toggle the Read checkbox for an entry      |
+| `l`                  | View entry details                         |
 | `o`                  | Open the entry's file in the browser       |
 | `c`                  | Copy the entry's link to the clipboard     |
 | `t`                  | Edit the entry's tags                      |
