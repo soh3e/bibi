@@ -48,7 +48,7 @@ but you can find the exact keybinds and corresponding behavior here:
 
 | Key                  | Action                                     |
 |----------------------|---------------------------------------------|
-| `a`                  | Add an entry from an arXiv URL/id          |
+| `a`                  | Add an entry, choosing arXiv or a PDF      |
 | `j` / `k`            | Move down / up                             |
 | `g` / `G`            | Scroll to top / bottom (entry list)        |
 | `gg` / `G`           | Scroll to top / bottom (previews/detail)   |
@@ -61,5 +61,18 @@ but you can find the exact keybinds and corresponding behavior here:
 | `escape` / `q` / `h` | Close the current screen                   |
 | `q`                  | Quit (from the main entry list)            |
 
-In any dialog with buttons (e.g. saving a new arXiv entry), `h`/`l` (and
-the arrow keys) move focus between them, same as Tab/Shift+Tab.
+In any dialog with buttons (e.g. confirming a delete, or saving a new
+entry), `h`/`l` (and the arrow keys) move focus between them, same as
+Tab/Shift+Tab.
+
+## Adding entries
+
+Press `a` to choose how to add an entry:
+
+- **arXiv**: paste a URL (`https://arxiv.org/abs/...`) or a bare arXiv id.
+  Title, authors, year, and the PDF are fetched automatically.
+- **PDF**: choose whether it's a **local file** or a **URL** (bibi doesn't
+  try to guess which from the string). A local file is *moved* into
+  bibi's library (the original no longer exists at its old location
+  afterward); a URL is downloaded. Either way, you're then asked to fill
+  in the entry's metadata -- only the title is required.

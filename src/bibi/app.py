@@ -14,6 +14,8 @@ from textual.widgets.data_table import RowDoesNotExist
 from . import clipboard, library
 from .art import BUNNY_LOGO
 from .screens.add_arxiv import AddArxivScreen
+from .screens.add_entry import AddEntryScreen
+from .screens.add_pdf import AddPdfScreen
 from .screens.confirm_delete import ConfirmDeleteScreen
 from .screens.edit_tags import EditTagsScreen
 from .screens.entry_detail import EntryDetailScreen
@@ -131,7 +133,7 @@ class BibiApp(App[None]):
     """
 
     BINDINGS = [
-        Binding("a", "add_arxiv", "Add from arXiv"),
+        Binding("a", "add_entry", "Add entry"),
         Binding("o", "open_file", "Open file"),
         Binding("c", "copy_link", "Copy link"),
         Binding("t", "edit_tags", "Edit tags"),
@@ -243,12 +245,18 @@ class BibiApp(App[None]):
         )
         return title_width, authors_width, tags_width
 
-    def action_add_arxiv(self) -> None:
-        def on_result(entry: dict[str, Any] | None) -> None:
+    def action_add_entry(self) -> None:
+        def on_entry_added(entry: dict[str, Any] | None) -> None:
             if entry is not None:
                 self.refresh_table()
 
-        self.push_screen(AddArxivScreen(), on_result)
+        def on_type_chosen(kind: str | None) -> None:
+            if kind == "arxiv":
+                self.push_screen(AddArxivScreen(), on_entry_added)
+            elif kind == "pdf":
+                self.push_screen(AddPdfScreen(), on_entry_added)
+
+        self.push_screen(AddEntryScreen(), on_type_chosen)
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         folder = event.row_key.value

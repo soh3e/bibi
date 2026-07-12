@@ -38,19 +38,43 @@ def _write_info(folder: Path, data: dict[str, Any]) -> None:
                         sort_keys=False)
 
 
+def _new_entry_folder() -> Path:
+    folder = _unique_folder(get_library_dir())
+    folder.mkdir(parents=True)
+    return folder
+
+
 def create_entry(data: dict[str, Any], pdf_bytes: bytes | None = None) -> Path:
     """Save *data* (and optionally a PDF) as a new library entry.
 
     :returns: the path to the new entry's folder.
     """
-    library_dir = get_library_dir()
-    folder = _unique_folder(library_dir)
-    folder.mkdir(parents=True)
+    folder = _new_entry_folder()
 
     data = dict(data)
     if pdf_bytes:
         (folder / PDF_FILE_NAME).write_bytes(pdf_bytes)
         data["files"] = [PDF_FILE_NAME]
+
+    _write_info(folder, data)
+    return folder
+
+
+def create_entry_from_file(data: dict[str, Any], pdf_path: Path) -> Path:
+    """Save *data* as a new entry, moving an existing on-disk PDF into it.
+
+    Unlike :func:`create_entry`, this *moves* ``pdf_path`` (e.g. a PDF the
+    user already had lying around) rather than writing freshly-fetched
+    bytes -- the original file no longer exists at its old location
+    afterward.
+
+    :returns: the path to the new entry's folder.
+    """
+    folder = _new_entry_folder()
+
+    data = dict(data)
+    shutil.move(str(pdf_path), str(folder / PDF_FILE_NAME))
+    data["files"] = [PDF_FILE_NAME]
 
     _write_info(folder, data)
     return folder
