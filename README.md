@@ -56,6 +56,7 @@ but you can find the exact keybinds and corresponding behavior here:
 | `l`                  | View entry details                         |
 | `o`                  | Open the entry's file in the browser       |
 | `c`                  | Copy the entry's link to the clipboard     |
+| `e`                  | Edit the entry (title, authors, year)      |
 | `t`                  | Edit the entry's tags                      |
 | `d`                  | Delete the entry (asks for confirmation)   |
 | `escape` / `q` / `h` | Close the current screen                   |

@@ -17,6 +17,7 @@ from .screens.add_arxiv import AddArxivScreen
 from .screens.add_entry import AddEntryScreen
 from .screens.add_pdf import AddPdfScreen
 from .screens.confirm_delete import ConfirmDeleteScreen
+from .screens.edit_entry import EditEntryScreen
 from .screens.edit_tags import EditTagsScreen
 from .screens.entry_detail import EntryDetailScreen
 
@@ -136,6 +137,7 @@ class BibiApp(App[None]):
         Binding("a", "add_entry", "Add entry"),
         Binding("o", "open_file", "Open file"),
         Binding("c", "copy_link", "Copy link"),
+        Binding("e", "edit_entry", "Edit entry"),
         Binding("t", "edit_tags", "Edit tags"),
         Binding("d", "delete_entry", "Delete entry"),
         Binding("q", "quit", "Quit"),
@@ -302,6 +304,17 @@ class BibiApp(App[None]):
 
         clipboard.copy(self, link)
         self.notify(f"Copied to clipboard: {link}")
+
+    def action_edit_entry(self) -> None:
+        entry = self._selected_entry()
+        if entry is None:
+            return
+
+        def on_result(updated: dict[str, Any] | None) -> None:
+            if updated is not None:
+                self.refresh_table()
+
+        self.push_screen(EditEntryScreen(entry), on_result)
 
     def action_edit_tags(self) -> None:
         entry = self._selected_entry()

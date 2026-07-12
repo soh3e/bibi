@@ -15,6 +15,7 @@ from textual.widgets import Static
 from .. import clipboard, library
 from ..vim import VimScrollBindings
 from .confirm_delete import ConfirmDeleteScreen
+from .edit_entry import EditEntryScreen
 from .edit_tags import EditTagsScreen
 
 
@@ -41,7 +42,7 @@ def _format_entry(data: dict[str, Any]) -> str:
 
 
 class EntryDetailScreen(VimScrollBindings, ModalScreen[None]):
-    """Read-only entry viewer. Editing is not implemented yet."""
+    """Entry viewer, with actions to edit/tag/delete/open it."""
 
     DEFAULT_CSS = """
     EntryDetailScreen {
@@ -64,6 +65,7 @@ class EntryDetailScreen(VimScrollBindings, ModalScreen[None]):
         Binding("escape,q,h", "close", "Close", show=True),
         Binding("o", "open_file", "Open", show=True),
         Binding("c", "copy_link", "Copy link", show=True),
+        Binding("e", "edit_entry", "Edit entry", show=True),
         Binding("t", "edit_tags", "Edit tags", show=True),
         Binding("d", "delete_entry", "Delete entry", show=True),
     ]
@@ -102,6 +104,13 @@ class EntryDetailScreen(VimScrollBindings, ModalScreen[None]):
 
         clipboard.copy(self.app, link)
         self.notify(f"Copied to clipboard: {link}")
+
+    def action_edit_entry(self) -> None:
+        def on_result(updated: dict[str, Any] | None) -> None:
+            if updated is not None:
+                self.query_one("#detail_text", Static).update(_format_entry(self._entry))
+
+        self.app.push_screen(EditEntryScreen(self._entry), on_result)
 
     def action_edit_tags(self) -> None:
         def on_result(tags: list[str] | None) -> None:
